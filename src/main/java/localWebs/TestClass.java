@@ -2,89 +2,88 @@ package localWebs;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
+import static org.testng.AssertJUnit.assertEquals;
 
 public class TestClass {
+
+    private static final String WEB_DRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
+    private static final String DISABLE_INFO_BARS = "disable-infobars";
     private static final String CHROME_DRIVER_PATH = "drivers/chromedriver.exe";
+    private static final String RELATIVE_PATH = "local-webs/search/index.html";
+    private static final String LOCAL_PAGE = new File(RELATIVE_PATH).getAbsolutePath();
+    private static final String LOCAL_PAGE_SEARCH_BOX = "searchbox";
+    private static final String RANDOM = "random";
+    private static final By LOCAL_PAGE_SEARCH_BUTTON = By.xpath("//img[@class='mic']");
+
     private WebDriver driver;
-    private String RELATIVE_PATH = "local-webs/search/index.html";
-    private String appURL = new File(RELATIVE_PATH).getAbsolutePath();
-    private String GOOGLE_INPUT_ID = "searchbox";
-    private By GOOGLE_SEARCH_BUTTTON = By.xpath("//img[@class='mic']");
-    private String SEARCH_RANDOM = "random";
-    private String GOOGLE_TITLE = "Google";
+    private WebDriverWait wait;
+
 
     @BeforeClass
     public void testSetUp() {
-        System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_PATH);
+        System.setProperty(WEB_DRIVER_CHROME_DRIVER, CHROME_DRIVER_PATH);
+    }
+
+    @BeforeMethod
+    public void setUp() throws Exception {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("disable-infobars");
+        options.addArguments(DISABLE_INFO_BARS);
         driver = new ChromeDriver(options);
+        driver.get(LOCAL_PAGE);
+        wait = new WebDriverWait(driver, 10);
     }
 
     @Test
-    public void scenario1() {
+    public void searchCatsOnResultClickCatPageAndFindTheDerpCat() {
         String cats = "cats";
-        String funnyCat = "derp.jpg";
-
+        String derpCat = "derp.jpg";
         By catLink = By.xpath("//div/a[contains(text(), '" + cats + "')]");
-        By funnyCatLink = By.cssSelector("a[href='" + funnyCat + "']");
+        By funnyCatLink = By.cssSelector("a[href='" + derpCat + "']");
 
-        driver.get(appURL);
-        driver.findElement(By.id(GOOGLE_INPUT_ID)).sendKeys(cats);
-        driver.findElement(GOOGLE_SEARCH_BUTTTON).click();
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(catLink));
-        element.click();
-        WebDriverWait waiting = new WebDriverWait(driver, 10);
-        WebElement elementCat = waiting.until(ExpectedConditions.elementToBeClickable(funnyCatLink));
-        elementCat.click();
+        driver.findElement(By.id(LOCAL_PAGE_SEARCH_BOX)).sendKeys(cats);
+        driver.findElement(LOCAL_PAGE_SEARCH_BUTTON).click();
+        wait.until(ExpectedConditions.elementToBeClickable(catLink)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(funnyCatLink)).click();
 
         String title = driver.getTitle();
-        assertTrue(title.contains(funnyCat));
+        assertTrue(title.contains(derpCat));
     }
 
     @Test
-    public void scenario2() {
+    public void searchRandomOnResultClickWikipediaPage() {
         String wiki = "Wiki";
         By wikiLink = By.xpath("//div/a[contains(string(), '" + wiki + "')]");
 
-        driver.get(appURL);
-        driver.findElement(By.id(GOOGLE_INPUT_ID)).sendKeys(SEARCH_RANDOM);
-        driver.findElement(GOOGLE_SEARCH_BUTTTON).click();
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(wikiLink));
-        element.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.id(LOCAL_PAGE_SEARCH_BOX))).sendKeys(RANDOM);
+        driver.findElement(LOCAL_PAGE_SEARCH_BUTTON).click();
+        wait.until(ExpectedConditions.elementToBeClickable(wikiLink)).click();
 
         String title = driver.getTitle();
         assertTrue(title.contains(wiki));
     }
 
     @Test
-    public void scenario3() {
+    public void searchFoodOnResultClickFoodPageAndFindTheFoodNews() {
         String food = "food";
-        By newsLink = By.xpath("//div/a[contains(@href, 'food') and contains(@href, 'news')]");
+        By newsLink = By.xpath("//div/a[contains(@href, '" + food + "') and contains(@href, 'news')]");
         By imgLink = By.xpath("//a/div[@class='news4']");
 
-        driver.get(appURL);
-        driver.findElement(By.id(GOOGLE_INPUT_ID)).sendKeys(food);
-        driver.findElement(GOOGLE_SEARCH_BUTTTON).click();
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(newsLink));
-        element.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.id(LOCAL_PAGE_SEARCH_BOX))).sendKeys(food);
+        driver.findElement(LOCAL_PAGE_SEARCH_BUTTON).click();
+        wait.until(ExpectedConditions.elementToBeClickable(newsLink)).click();
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
         driver.findElement(imgLink).click();
 
@@ -92,81 +91,54 @@ public class TestClass {
         assertTrue(currentUrl.contains("food.html"));
     }
 
-    //
     @Test
-    // Ejecuting Test
-    public void scenario4() {
-        By MOVIE_LINK = By.xpath("//div[4]/a");
-        By IMG_MOVIE = By.xpath("//img[@alt=\"John Cena in Ferdinand (2017)\"]");
-        //Open Page
-        driver.get(appURL);
-        //Fill out search input
-        driver.findElement(By.id(GOOGLE_INPUT_ID)).sendKeys(SEARCH_RANDOM);
-        //Press search button
-        driver.findElement(GOOGLE_SEARCH_BUTTTON).click();
-        //Wait till link is present
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement movieLink = wait.until(ExpectedConditions.elementToBeClickable(MOVIE_LINK));
-        //Press search button
-        movieLink.click();
-        //Search and press img
-        driver.findElement(IMG_MOVIE).click();
-        //Verify URL
-        String getTitle = driver.getTitle();
-        Assert.assertEquals(getTitle, GOOGLE_TITLE);
+    public void searchRandomOnResultClickMoviesPageAndFindMovieAboutFerdinand() {
+        String movies = "movies!";
+        By movieLink = By.xpath("//div/a[contains(text(),'" + movies + "')]");
+        By movieImage = By.xpath("//img[@alt=\"John Cena in Ferdinand (2017)\"]");
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.id(LOCAL_PAGE_SEARCH_BOX))).sendKeys(RANDOM);
+        driver.findElement(LOCAL_PAGE_SEARCH_BUTTON).click();
+        wait.until(ExpectedConditions.elementToBeClickable(movieLink)).click();
+        driver.findElement(movieImage).click();
+
+        String title = driver.getTitle();
+        assertEquals(title, "Google");
     }
 
     @Test
-    // Ejecuting Test
-    public void scenario5() {
-        By FREE_LINK = By.xpath("//div[5]/a");
-        By PRODUCT_LINK = By.xpath("//a[@title='FlashGet']");
-        By SOFTONIC_LINK = By.xpath("regexp:softonic.+$");
-        //Open Page
-        driver.get(appURL);
-        //Fill out search input
-        driver.findElement(By.id(GOOGLE_INPUT_ID)).sendKeys(SEARCH_RANDOM);
-        //Press search button
-        driver.findElement(GOOGLE_SEARCH_BUTTTON).click();
-        //Wait till link is present
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement freeLink = wait.until(ExpectedConditions.elementToBeClickable(FREE_LINK));
-        //Press search button
-        freeLink.click();
-        //Find and click correct link
-        driver.findElement(PRODUCT_LINK).click();
-        //Verify URL
-        String getTitle = driver.getTitle();
-        Assert.assertNotEquals(getTitle, SOFTONIC_LINK);
+    public void searchRandomOnResultClickSoftwarePageAndFindFlashGetSoftwarePageWithoutSoftonicTitle() {
+        String softwareTitle = "full 100% gratis";
+        By softwareFreeLink = By.xpath("//div/a[contains(text(), '" + softwareTitle + "')]");
+        By flashGetLink = By.xpath("//a[@title='FlashGet']");
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.id(LOCAL_PAGE_SEARCH_BOX))).sendKeys(RANDOM);
+        driver.findElement(LOCAL_PAGE_SEARCH_BUTTON).click();
+        wait.until(ExpectedConditions.elementToBeClickable(softwareFreeLink)).click();
+        driver.findElement(flashGetLink).click();
+
+        String currentUrl = driver.getCurrentUrl();
+        assertFalse(currentUrl.contains("softonic"));
     }
 
     @Test
-    // Ejecuting Test
-    public void scenario6() {
-        String SEARCH_NOTEBOOK = "notebook";
-        By BUY_LINK = By.xpath("//div[7]/a");
-        By NOTEBOOK_IMG = By.xpath("//img[@alt='hp-m6.jpg']");
-        //Open Page
-        driver.get(appURL);
-        //Fill out search input
-        driver.findElement(By.id(GOOGLE_INPUT_ID)).sendKeys(SEARCH_NOTEBOOK);
-        //Press search button
-        driver.findElement(GOOGLE_SEARCH_BUTTTON).click();
-        //Wait till link is present
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement buyLink = wait.until(ExpectedConditions.elementToBeClickable(BUY_LINK));
-        //Press search button
-        buyLink.click();
-        //Find and click correct link
-        driver.findElement(NOTEBOOK_IMG).click();
-        //Verify URL
-        String getTitle = driver.getTitle();
-        Assert.assertNotEquals(getTitle, appURL);
+    public void searchNotebookOnResultClickShopPageAndFindNotebook() {
+        String notebook = "notebook";
+        String shop = "/shop/";
+        By shopLink = By.xpath("//div/a[contains(@href, '" + shop + "')]");
+        By notebookImage = By.xpath("//img[@alt='hp-m6.jpg']");
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.id(LOCAL_PAGE_SEARCH_BOX))).sendKeys(notebook);
+        driver.findElement(LOCAL_PAGE_SEARCH_BUTTON).click();
+        wait.until(ExpectedConditions.elementToBeClickable(shopLink)).click();
+        driver.findElement(notebookImage).click();
+
+        String title = driver.getTitle();
+        assertNotEquals(title, LOCAL_PAGE);
     }
 
-    @AfterClass
-    // Closing Browser when finish the test
+    @AfterMethod
     public void tearDown() {
-//        driver.quit();
+        driver.quit();
     }
 }
