@@ -1,8 +1,8 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Example test run">
+<suite name="Local Test Suite">
     <test name="Local Web Page Tests">
         <classes>
-            <class name="localWebs.TestClass"/>
+            <class name="localPageTest.LocalPageTest"/>
         </classes>
     </test>
 </suite>
